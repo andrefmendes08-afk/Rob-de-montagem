@@ -1,0 +1,12 @@
+
+{
+  "id": "/Rob-de-montagem/",
+  "name": "Robô de Montagens",
+  "short_name": "Meu Robô",
+  "description": "Crie suas próprias montagens de fotos gratuitamente.",
+  "start_url": "/Rob-de-montagem/",
+  "scope": "/Rob-de-montagem/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff69b4"
+}
