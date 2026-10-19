@@ -1,84 +1,134 @@
 
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head> <link rel="manifest" href="manifest.json">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Robô de Montagens</title>
-<style>
-body{font-family:Arial,sans-serif;background:#fff0f6;color:#38243a;text-align:center;padding:18px;margin:0}
-main{max-width:500px;margin:auto;background:white;padding:20px;border-radius:18px;box-shadow:0 4px 18px #0001}
-h1{color:#d63384}
-input,select,button{box-sizing:border-box;width:100%;padding:13px;margin:9px 0;border-radius:10px;border:1px solid #ddd;font-size:16px}
-button{background:#d63384;color:white;border:0;font-weight:bold}
-canvas{width:100%;height:auto;margin-top:15px;border-radius:10px}
-small{color:#655665}
-</style>
-</head>
-<body>
-<main>
-<h1>💖 Robô de Montagens</h1>
-<p>Crie uma montagem especial pelo celular!</p>
-<label for="foto">Escolha sua foto</label>
-<input id="foto" type="file" accept="image/*">
-<label for="estilo">Escolha o estilo</label>
-<select id="estilo">
-<option value="#ffb6d5">Romântico 💕</option>
-<option value="#ffe08a">Aniversário 🎂</option>
-<option value="#a8e6cf">Família ❤️</option>
-<option value="#bde0fe">Redes sociais ✨</option>
-</select>
-<input id="nome" maxlength="50" placeholder="Digite um nome">
-<input id="mensagem" maxlength="100" placeholder="Escreva uma mensagem">
-<button id="criar">Criar minha montagem</button>
-<canvas id="tela" width="800" height="1000"></canvas>
-<button id="baixar">Baixar minha montagem</button>
-<p><small>Sua foto é processada no próprio navegador.</small></p>
-</main>
-<script>
-const foto=document.getElementById('foto');
-const tela=document.getElementById('tela');
-const ctx=tela.getContext('2d');
-let imagem=null;
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6c3ce9">
+  <meta name="description" content="Robô de Montagens: crie montagens de fotos e imagens.">
+  <link rel="manifest" href="./manifest.json">
+  <title>Robô de Montagens</title>
 
-function desenhar(){
- const cor=document.getElementById('estilo').value;
- ctx.fillStyle=cor;
- ctx.fillRect(0,0,800,1000);
- if(imagem){
-  let escala=Math.min(720/imagem.width,700/imagem.height);
-  let w=imagem.width*escala,h=imagem.height*escala;
-  ctx.drawImage(imagem,(800-w)/2,35+(700-h)/2,w,h);
- }
- ctx.fillStyle='#ffffff';
- ctx.fillRect(0,770,800,230);
- ctx.fillStyle='#9c2365';
- ctx.textAlign='center';
- ctx.font='bold 48px Arial';
- ctx.fillText(document.getElementById('nome').value||'Um momento especial',(800/2),830,740);
- ctx.font='32px Arial';
- ctx.fillText(document.getElementById('mensagem').value||'Feito com carinho 💖',400,895,740);
- ctx.strokeStyle='#ffffff';
- ctx.lineWidth=18;
- ctx.strokeRect(12,12,776,976);
-}
-foto.addEventListener('change',()=>{
- const arquivo=foto.files[0];
- if(!arquivo)return;
- imagem=new Image();
- imagem.onload=desenhar;
- imagem.src=URL.createObjectURL(arquivo);
-});
-document.getElementById('criar').addEventListener('click',desenhar);
-document.getElementById('estilo').addEventListener('change',desenhar);
-document.getElementById('baixar').addEventListener('click',()=>{
- desenhar();
- const link=document.createElement('a');
- link.download='minha-montagem.png';
- link.href=tela.toDataURL('image/png');
- link.click();
-});
-desenhar();
-</script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #6c3ce9, #e83e8c);
+      color: #222;
+      min-height: 100vh;
+    }
+
+    main {
+      max-width: 500px;
+      margin: 30px auto;
+      padding: 24px;
+      background: white;
+      border-radius: 18px;
+      text-align: center;
+      box-shadow: 0 5px 20px #0002;
+    }
+
+    h1 {
+      color: #6c3ce9;
+    }
+
+    p {
+      line-height: 1.5;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 13px;
+      margin-top: 12px;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    input {
+      border: 1px solid #ccc;
+    }
+
+    button {
+      border: 0;
+      background: #6c3ce9;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #preview {
+      display: none;
+      max-width: 100%;
+      max-height: 400px;
+      margin-top: 20px;
+      border-radius: 12px;
+    }
+
+    #status {
+      overflow-wrap: anywhere;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1>🤖 Robô de Montagens</h1>
+    <p>Escolha uma foto para começar sua montagem!</p>
+
+    <input type="file" id="foto" accept="image/*">
+
+    <img id="preview" alt="Prévia da imagem escolhida">
+
+    <button id="baixar" hidden>
+      Baixar imagem
+    </button>
+
+    <p id="status">Seu robô está pronto para começar!</p>
+  </main>
+
+  <script>
+    const foto = document.getElementById("foto");
+    const preview = document.getElementById("preview");
+    const baixar = document.getElementById("baixar");
+    const status = document.getElementById("status");
+
+    let imagemAtual = "";
+
+    foto.addEventListener("change", function () {
+      const arquivo = foto.files[0];
+
+      if (!arquivo) return;
+
+      if (imagemAtual) {
+        URL.revokeObjectURL(imagemAtual);
+      }
+
+      imagemAtual = URL.createObjectURL(arquivo);
+      preview.src = imagemAtual;
+      preview.style.display = "block";
+      baixar.hidden = false;
+      status.textContent = "Foto carregada! Você já pode baixá-la.";
+    });
+
+    baixar.addEventListener("click", function () {
+      if (!imagemAtual) return;
+
+      const link = document.createElement("a");
+      link.href = imagemAtual;
+      link.download = "minha-montagem.png";
+      link.click();
+    });
+
+    if ("serviceWorker" in navigator && location.protocol === "https:") {
+      navigator.serviceWorker.register("./sw.js")
+        .catch(function () {});
+    }
+  </script>
 </body>
-</html>
+ </html>
+ 
