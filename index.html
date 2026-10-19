@@ -4,131 +4,120 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#6c3ce9">
-  <meta name="description" content="Robô de Montagens: crie montagens de fotos e imagens.">
-  <link rel="manifest" href="./manifest.json">
-  <title>Robô de Montagens</title>
-
+  <meta name="theme-color" content="#2563eb">
+  <meta name="description" content="Robô de Montagem: crie montagens com suas imagens.">
+  <title>Meu Robô de Montagem</title>
+  <link rel="manifest" href="manifest.json">
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       padding: 20px;
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #6c3ce9, #e83e8c);
-      color: #222;
-      min-height: 100vh;
+      background: #f1f5f9;
+      color: #1e293b;
     }
-
     main {
-      max-width: 500px;
-      margin: 30px auto;
-      padding: 24px;
+      max-width: 600px;
+      margin: auto;
       background: white;
+      padding: 22px;
       border-radius: 18px;
-      text-align: center;
-      box-shadow: 0 5px 20px #0002;
+      box-shadow: 0 4px 15px #0001;
     }
-
-    h1 {
-      color: #6c3ce9;
-    }
-
-    p {
-      line-height: 1.5;
-    }
-
+    h1 { color: #2563eb; text-align: center; }
+    p { line-height: 1.5; }
     input, button {
       width: 100%;
       padding: 13px;
-      margin-top: 12px;
+      margin: 8px 0;
       border-radius: 10px;
       font-size: 16px;
     }
-
-    input {
-      border: 1px solid #ccc;
-    }
-
     button {
       border: 0;
-      background: #6c3ce9;
+      background: #2563eb;
       color: white;
       font-weight: bold;
-      cursor: pointer;
     }
-
-    #preview {
-      display: none;
-      max-width: 100%;
-      max-height: 400px;
-      margin-top: 20px;
-      border-radius: 12px;
+    canvas {
+      width: 100%;
+      height: auto;
+      margin-top: 15px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
     }
-
-    #status {
-      overflow-wrap: anywhere;
-    }
+    #status { overflow-wrap: anywhere; }
   </style>
 </head>
-
 <body>
   <main>
-    <h1>🤖 Robô de Montagens</h1>
-    <p>Escolha uma foto para começar sua montagem!</p>
+    <h1>🤖 Meu Robô de Montagem</h1>
+    <p>Escolha duas imagens para criar sua montagem.</p>
 
-    <input type="file" id="foto" accept="image/*">
+    <label for="foto1">Primeira imagem</label>
+    <input id="foto1" type="file" accept="image/*">
 
-    <img id="preview" alt="Prévia da imagem escolhida">
+    <label for="foto2">Segunda imagem</label>
+    <input id="foto2" type="file" accept="image/*">
 
-    <button id="baixar" hidden>
-      Baixar imagem
-    </button>
+    <button id="montar">Criar montagem</button>
+    <button id="baixar">Baixar montagem</button>
 
-    <p id="status">Seu robô está pronto para começar!</p>
+    <p id="status">Escolha suas imagens para começar.</p>
+    <canvas id="resultado" width="600" height="400"></canvas>
   </main>
 
   <script>
-    const foto = document.getElementById("foto");
-    const preview = document.getElementById("preview");
-    const baixar = document.getElementById("baixar");
-    const status = document.getElementById("status");
+    const foto1 = document.getElementById('foto1');
+    const foto2 = document.getElementById('foto2');
+    const canvas = document.getElementById('resultado');
+    const ctx = canvas.getContext('2d');
+    const status = document.getElementById('status');
 
-    let imagemAtual = "";
+    function carregarImagem(arquivo) {
+      return new Promise((resolve, reject) => {
+        if (!arquivo) {
+          reject(new Error('Escolha as duas imagens primeiro.'));
+          return;
+        }
+        const imagem = new Image();
+        const url = URL.createObjectURL(arquivo);
+        imagem.onload = () => {
+          URL.revokeObjectURL(url);
+          resolve(imagem);
+        };
+        imagem.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error('Não foi possível abrir uma das imagens.'));
+        };
+        imagem.src = url;
+      });
+    }
 
-    foto.addEventListener("change", function () {
-      const arquivo = foto.files[0];
+    document.getElementById('montar').addEventListener('click', async () => {
+      try {
+        status.textContent = 'Criando sua montagem...';
+        const [img1, img2] = await Promise.all([
+          carregarImagem(foto1.files[0]),
+          carregarImagem(foto2.files[0])
+        ]);
 
-      if (!arquivo) return;
-
-      if (imagemAtual) {
-        URL.revokeObjectURL(imagemAtual);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img1, 0, 0, 300, 400);
+        ctx.drawImage(img2, 300, 0, 300, 400);
+        status.textContent = 'Montagem criada! Você já pode baixar.';
+      } catch (erro) {
+        status.textContent = erro.message;
       }
-
-      imagemAtual = URL.createObjectURL(arquivo);
-      preview.src = imagemAtual;
-      preview.style.display = "block";
-      baixar.hidden = false;
-      status.textContent = "Foto carregada! Você já pode baixá-la.";
     });
 
-    baixar.addEventListener("click", function () {
-      if (!imagemAtual) return;
-
-      const link = document.createElement("a");
-      link.href = imagemAtual;
-      link.download = "minha-montagem.png";
+    document.getElementById('baixar').addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'minha-montagem.png';
+      link.href = canvas.toDataURL('image/png');
       link.click();
     });
-
-    if ("serviceWorker" in navigator && location.protocol === "https:") {
-      navigator.serviceWorker.register("./sw.js")
-        .catch(function () {});
-    }
   </script>
 </body>
- </html>
- 
+</html>
