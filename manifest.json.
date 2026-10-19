@@ -1,24 +1,19 @@
 
 {
-  "id": "/Rob-de-montagem/",
-  "name": "Robô de Montagens",
+  "name": "Robô de Montagem",
   "short_name": "Meu Robô",
-  "description": "Crie suas próprias montagens de fotos gratuitamente.",
-  "start_url": "/Rob-de-montagem/",
-  "scope": "/Rob-de-montagem/",
+  "description": "Meu robô de montagem de imagens e criações.",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#ffffff",
-  "theme_color": "#ff69b4",
+  "theme_color": "#2563eb",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "icon-192.jpg",
       "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/jpeg"
     }
   ]
 }
